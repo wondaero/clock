@@ -8,8 +8,11 @@
     <link rel="stylesheet" href="./assets/css/normalize.css" />
 
     <style>
+        *{
+            box-sizing: border-box;
+        }
         body{
-            background: #ddd;
+            background: #000;
         }
         .canvas-wrapper{
             width: 100%;
@@ -20,16 +23,25 @@
         }
 
         .btns-wrapper{
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            width: 100%;
+            padding: 10px;
+            align-items: center;
+            justify-content: space-between;
+
+        }
+
+        .btns-wrapper .right{
             display: flex;
             align-items: center;
-            position: fixed;
-            top: 5px;
-            right: 5px;
         }
-        .btns-wrapper > *{
+        .btns-wrapper .right > *{
             margin-right: 5px;
         }
-        .btns-wrapper > *:last-child{
+        .btns-wrapper .right > *:last-child{
             margin-right: 0;
         }
 
@@ -50,21 +62,53 @@
             color: #000;
             box-shadow: 0 0 5px rgba(0, 0, 0, .8);
         }
-    </style>
+
+        .toggle-form input{
+            display: none;
+        }
+        .toggle-form span{
+            display: inline-flex;
+            vertical-align: top;
+            width: 140px;
+            background: red;
+            align-items: center;
+            color: #fff;
+        }
+        .toggle-form strong{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 15px;
+            background: green;
+            height: 30px;
+            width: 70px;
+        }
+        </style>
 </head>
 <body>
     <div class="canvas-wrapper">
         <canvas id="canvas"></canvas>
     </div>
     <div class="btns-wrapper">
-        <label class="radio-form">
-            <input type="radio" name="effect" value="1" oninput="changeEffect();" checked>
-            <strong>효과1</strong>
-        </label>
-        <label class="radio-form">
-            <input type="radio" name="effect" value="2" oninput="changeEffect();">
-            <strong>효과2</strong>
-        </label>
+        <!-- <div class="left">
+            <label class="toggle-form">
+                <input type="checkbox" oninput="changeType();" checked />
+                <span>
+                    <strong>ANALOG</strong>
+                    <strong>DIGITAL</strong>
+                </span>
+            </label>
+        </div> -->
+        <div class="right">
+            <label class="radio-form">
+                <input type="radio" name="effect" value="1" oninput="changeEffect();" checked />
+                <strong>EFECT1</strong>
+            </label>
+            <label class="radio-form">
+                <input type="radio" name="effect" value="2" oninput="changeEffect();">
+                <strong>EFECT2</strong>
+            </label>
+        </div>
         <!-- <label class="radio-form">
             <input type="radio" name="effect" value="3" oninput="changeEffect();">
             <strong>효과3</strong>
@@ -78,10 +122,9 @@
         let raf;
 
         const canvas = document.querySelector('canvas');
-        const ctx = canvas.getContext('2d');
 
         canvas.width = 240;
-        canvas.height = 150;
+        canvas.height = 240;
 
         class Particle {
             constructor(clock, x, y, color){
@@ -93,15 +136,16 @@
                     this.y = this.clock.height * Math.random();
                     this.originX = x;
                     this.originY = y;
-                    this.ease = Math.random() * 20 / this.clock.fps;
+                    this.ease = Math.random() * 30 / this.clock.fps; //text
+                    this.ease = Math.random() * 80 / this.clock.fps;    //아날로그
 
                 }else if(this.clock.effectVal === 2){
                     this.x = x;
                     this.y = y;
                     this.originX = this.clock.width * Math.random();
                     this.originY = this.clock.height * Math.random();
-                    // this.ease = Math.random() * .08 / this.clock.fps;
-                    this.ease = Math.random() * .2 / this.clock.fps;
+                    this.ease = Math.random() * .2 / this.clock.fps;    //text
+                    this.ease = Math.random() * .15 / this.clock.fps;    //아날로그
                     
                 }else if(this.clock.effectVal === 3){
                     this.x = this.clock.width * .5;
@@ -127,14 +171,15 @@
                 this.clock.ctx.strokeStyle = this.color;
 
                 //네모
-                // this.clock.ctx.fillRect(this.x, this.y, this.size, this.size);
+                this.clock.ctx.fillRect(this.x, this.y, this.size, this.size);
 
                 //동그라미
-                this.clock.ctx.arc(this.x, this.y, this.size * .5, 0, 2*Math.PI);
+                // this.clock.ctx.arc(this.x, this.y, this.size * .5, 0, 2*Math.PI);
 
-                this.clock.ctx.fill();
+                // this.clock.ctx.fill();
                 // this.clock.ctx.stroke();
 
+                //아날로그
             }
 
             update()  {
@@ -158,7 +203,7 @@
             t.width = 0;
             t.height = 0;
 
-            t.gap = 1;
+            t.gap = 3;
 
             t.effectVal = 1;
 
@@ -180,6 +225,8 @@
                 const h = d.getHours();
                 const m = d.getMinutes();
                 const s = d.getSeconds();
+
+                t.date = {h, m, s};
 
                 const hms = `${t.digit2(h)} : ${t.digit2(m)} : ${t.digit2(s)}`;
 
@@ -213,7 +260,6 @@
                     t.ctx.font = `italic ${t.fontSize}px arial`;
                     t.ctx.fillText('loading...', t.width * .5, t.height * .5);
 
-
                     t.fpsChk++;
 
                     return;
@@ -234,8 +280,87 @@
                 t.ctx.textBaseline = 'middle';
                 t.ctx.font = `italic ${t.fontSize}px arial`;
 
-                t.ctx.fillText(t.hms, t.width * .5, t.height * .5);
-                const pixels = t.ctx.getImageData(0, 0, t.width, t.width).data;
+
+                // t.ctx.fillText(t.hms, t.width * .5, t.height * .5);
+
+
+                const analogRadius = 80;
+                const customR = analogRadius + 40;
+                t.ctx.translate(customR, customR);
+
+                drawClock();
+
+                function drawClock() {
+                    drawFace(t.ctx, analogRadius);
+                    drawNumbers(t.ctx, analogRadius);
+                    drawTime(t.ctx, analogRadius);
+                }
+
+                function drawFace(ctx, radius) {
+                    ctx.beginPath();
+                    ctx.arc(0, 0, radius, 0, Math.PI * 2);
+
+                    ctx.fillStyle = '#0e1133';
+                    ctx.fill();
+                    const grad2 = ctx.createRadialGradient(0, 0, radius * .95, 0, 0, radius * 1.05);
+                    grad2.addColorStop(0, 'gold');
+                    grad2.addColorStop(0.5, '#fff');
+                    grad2.addColorStop(1, 'gold');
+                    ctx.strokeStyle = grad2;
+                    ctx.lineWidth = radius * .1;
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(0, 0, radius * .1, 0, 2 * Math.PI);
+                    ctx.fillStyle = '#eee';
+                    ctx.fill();
+                }
+
+                function drawNumbers(ctx, radius) {
+                    let ang;
+                    ctx.font = `${radius * .15}px arial`;
+                    ctx.textBaseline = "middle";
+                    ctx.textAlign = "center";
+                    for(let num = 1; num < 13; num++){
+                        ang = num * Math.PI / 6;
+                        ctx.rotate(ang);
+                        ctx.translate(0, -radius * .85);
+                        ctx.rotate(-ang);
+                        ctx.fillText(num.toString(), 0, 0);
+                        ctx.rotate(ang);
+                        ctx.translate(0, radius * .85);
+                        ctx.rotate(-ang);
+                    }
+                }
+
+                function drawTime(ctx, radius){
+                    //hour
+                    t.ctx.strokeStyle = '#fff';
+                    const customH = ((t.date.h % 2) * Math.PI / 6) + (t.date.m * Math.PI / (6 * 60)) + (t.date.s * Math.PI / (360 * 60));
+                    drawHand(ctx, customH, radius * .5, radius * .07);
+                    //minute
+                    const customM = (t.date.m * Math.PI / 30) + (t.date.s * Math.PI / (30 * 60));
+                    t.ctx.strokeStyle = 'gold';
+                    drawHand(ctx, customM, radius * .8, radius * .07);
+                    // second
+                    const customS = (t.date.s * Math.PI / 30);
+                    t.ctx.strokeStyle = '#f00';
+                    drawHand(ctx, customS, radius * .9, radius * .02);
+                }
+
+                function drawHand(ctx, pos, length, width) {
+                    ctx.beginPath();
+                    ctx.lineWidth = width;
+                    ctx.lineCap = "round";
+                    ctx.moveTo(0, 0);
+                    ctx.rotate(pos);
+                    ctx.lineTo(0, -length);
+                    ctx.stroke();
+                    ctx.rotate(-pos);
+                }
+
+                const pixels = t.ctx.getImageData(0, 0, t.width, t.height).data;
+                t.ctx.translate(-customR, -customR);
+
                 
                 particles.length = 0;
 
@@ -252,11 +377,14 @@
                         if(a > 0) particles.push(new Particle(t, x, y, `rgb(${r}, ${g}, ${b})`));
                     }
                 }
+
             }
 
             t.render = () => {
+                // return;
                 if(!t.fps) return;
                 t.ctx.clearRect(0, 0, t.width, t.height);
+                t.ctx.translate(0, 0);
                 
                 particles.forEach(function(particle){
                     particle.update();
@@ -269,7 +397,7 @@
                 // const w = window.innerWidth;
                 // const h = window.innerHeight;
                 const w = 240;
-                const h = 150;
+                const h = 240;
 
                 if(w !== t.width){
                     t.width = w;
@@ -280,7 +408,7 @@
                     t.target.height = t.height;
                 }
 
-                const calcedSize = (w > h ? h : w) * .3;
+                const calcedSize = (w > h ? h : w) * .15;
 
                 if(t.fontSize !== calcedSize) t.fontSize = calcedSize;
             }
