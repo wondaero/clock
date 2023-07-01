@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link rel="stylesheet" href="./assets/css/normalize.css" />
+
+    <style>
+        .canvas-wrapper{
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        canvas{background: #000;}
+
+        .btns-wrapper{
+            display: flex;
+            align-items: center;
+            position: fixed;
+            top: 5px;
+            right: 5px;
+        }
+        .btns-wrapper > *{
+            margin-right: 5px;
+        }
+        .btns-wrapper > *:last-child{
+            margin-right: 0;
+        }
+
+        .radio-form input{
+            display: none;
+        }
+        .radio-form strong{
+            padding: 10px;
+            border-radius: 5px;
+            display: inline-block;
+            vertical-align: top;
+            color: #999;
+            background: #777;
+            cursor: pointer;
+        }
+        .radio-form input:checked + strong{
+            background: #fff;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="canvas-wrapper">
+        <canvas id="canvas"></canvas>
+    </div>
+    <div class="btns-wrapper">
+        <label class="radio-form">
+            <input type="radio" name="effect" value="1" oninput="changeEffect();" checked>
+            <strong>효과1</strong>
+        </label>
+        <label class="radio-form">
+            <input type="radio" name="effect" value="2" oninput="changeEffect();">
+            <strong>효과2</strong>
+        </label>
+        <label class="radio-form">
+            <input type="radio" name="effect" value="3" oninput="changeEffect();">
+            <strong>효과3</strong>
+        </label>
+        <label class="radio-form">
+            <input type="radio" name="effect" value="4" oninput="changeEffect();">
+            <strong>효과4</strong>
+        </label>
+    </div>
+    <script>
+        let raf;
+
+        const canvas = document.querySelector('canvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = 240;
+        canvas.height = 150;
+
+        class Particle {
+            constructor(clock, x, y, color){
+
+                this.clock = clock;
+
+                if(this.clock.effectVal === 1){
+                    this.x = this.clock.width * Math.random();
+                    this.y = this.clock.height * Math.random();
+                    this.originX = x;
+                    this.originY = y;
+                    this.ease = Math.random() * 15 / this.clock.fps;
+
+                }else if(this.clock.effectVal === 2){
+                    this.x = x;
+                    this.y = y;
+                    this.originX = this.clock.width * Math.random();
+                    this.originY = this.clock.height * Math.random();
+                    this.ease = Math.random() * .15 / this.clock.fps;
+                    
+                }else if(this.clock.effectVal === 3){
+                    this.x = this.clock.width * .5;
+                    this.y = this.clock.height * .5;
+                    this.originX = x;
+                    this.originY = y;
+                    this.ease = Math.random() * 5 / this.clock.fps;
+                }else if(this.clock.effectVal === 4){
+                    this.x = x;
+                    this.y = y;
+                    this.originX = this.clock.width * .5;
+                    this.originY = this.clock.height * .5;
+                    this.ease = Math.random() * 1 / this.clock.fps;
+                }
+
+                this.size = this.clock.gap;
+                this.color = color;
+                
+
+            }
+            
+            draw() {
+                this.clock.ctx.beginPath();
+                this.clock.ctx.fillStyle = this.color;
+                this.clock.ctx.strokeStyle = this.color;
+
+                //네모
+                this.clock.ctx.fillRect(this.x, this.y, this.size, this.size);
+
+                //동그라미
+                // this.clock.ctx.arc(this.x, this.y, this.size * .5, 0, 2*Math.PI);
+
+                // this.clock.ctx.fill();
+                // this.clock.ctx.stroke();
+
+            }
+
+            update()  {
+                this.x += (this.originX - this.x) * this.ease;
+                this.y += (this.originY - this.y) * this.ease;
+            }
+
+            
+        }
+
+
+        const clock = new Clock({
+            canvasTarget: 'canvas',
+        });
+
+        function Clock (param) {
+            const t = this;
+
+            const particles = [];
+
+            t.hms = '';
+            t.ctx;
+            t.width = 0;
+            t.height = 0;
+
+            t.gap = 2;
+
+            t.effectVal = 1;
+
+            t.fontSize = 45;
+
+            t.digit2 = txt => +txt < 10 ? ('0' + txt) : txt;
+
+            t.frameCnt = 0;
+            t.fpsChk = 0;
+            t.fps1 = 0;
+            t.fps2 = 0;
+
+            t.fps;
+            
+            
+
+            t.timeUpdate = () => {
+                t.frameCnt++;
+                const d = new Date();
+                const h = d.getHours();
+                const m = d.getMinutes();
+                const s = d.getSeconds();
+
+                const hms = `${t.digit2(h)} : ${t.digit2(m)} : ${t.digit2(s)}`;
+
+                if(t.hms !== hms){
+                    t.hms = hms;
+                    
+                    t.effect();
+                }
+                
+                // console.log(hms);
+
+                t.resize();
+
+                
+                raf = window.requestAnimationFrame(t.timeUpdate);
+            }
+
+
+            t.effect = () => {
+                if(!t.fps){
+                    if(t.fpsChk === 1){
+                        // console.log(t.frameCnt);
+                        t.fps1 = t.frameCnt;
+                    }
+                    if(t.fpsChk === 2){
+                        // console.log(t.frameCnt);
+                        t.fps2 = t.frameCnt;
+                        t.fps = t.fps2 - t.fps1;
+                    }
+    
+                    t.ctx.fillStyle = '#fff'; 
+                    t.ctx.textAlign = 'center';
+                    t.ctx.textBaseline = 'middle';
+                    t.ctx.font = `italic ${t.fontSize}px arial`;
+                    t.ctx.fillText('loading...', t.width * .5, t.height * .5);
+
+
+                    t.fpsChk++;
+
+                    return;
+                }
+
+
+                t.ctx.clearRect(0, 0, t.width, t.height);
+                const gradient = t.ctx.createLinearGradient(0, 0, t.width, t.height);
+                gradient.addColorStop(0.3, 'red');
+                gradient.addColorStop(0.5, 'yellow');
+                gradient.addColorStop(0.7, 'green');
+                t.ctx.fillStyle = gradient; 
+                t.ctx.textAlign = 'center';
+                t.ctx.textBaseline = 'middle';
+                t.ctx.font = `italic ${t.fontSize}px arial`;
+
+                t.ctx.fillText(t.hms, t.width * .5, t.height * .5);
+                const pixels = t.ctx.getImageData(0, 0, t.width, t.width).data;
+                
+                particles.length = 0;
+
+                for(let y = 0; y < t.height; y+= t.gap){
+                    for(let x = 0; x < t.width; x+= t.gap){
+                        const idx = (y * t.width + x) * 4;
+
+                        const r = pixels[idx];
+                        const g = pixels[idx + 1];
+                        const b = pixels[idx + 2];
+                        const a = pixels[idx + 3];
+
+
+                        if(a > 0) particles.push(new Particle(t, x, y, `rgb(${r}, ${g}, ${b})`));
+                    }
+
+                }
+            }
+
+            t.render = () => {
+                if(!t.fps) return;
+                t.ctx.clearRect(0, 0, t.width, t.height);
+                
+                particles.forEach(function(particle){
+                    particle.update();
+                    particle.draw();
+                })
+            }
+            
+
+            t.resize = () => {
+                const w = window.innerWidth;
+                const h = window.innerHeight;
+
+                if(w !== t.width){
+                    t.width = w;
+                    t.target.width = t.width;
+                }
+                if(h !== t.height){
+                    t.height = h;
+                    t.target.height = t.height;
+                }
+
+                const calcedSize = (w > h ? h : w) * .15;
+
+                if(t.fontSize !== calcedSize) t.fontSize = calcedSize;
+            }
+
+
+            t.changeEffect = (val) => {
+                t.effectVal = val;
+            }
+
+
+            function construct () {
+                t.target = document.querySelector(param.canvasTarget);
+                t.ctx = t.target.getContext('2d');
+                t.canvasWidth = t.target.width;
+                t.canvasHeight = t.target.height;
+                t.timeUpdate();
+                t.resize();
+            }
+
+            construct();
+            
+        }
+
+        function animation () {
+            clock.render();
+            window.requestAnimationFrame(animation);
+        }
+
+        animation();
+
+        function changeEffect () {
+            clock.changeEffect(+document.querySelector('input[name="effect"]:checked').value);
+        }
+
+
+        
+    </script>
+</body>
+</html>
