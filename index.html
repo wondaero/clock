@@ -8,41 +8,14 @@
     <link rel="stylesheet" href="./assets/css/normalize.css" />
 
     <style>
-        *{
-            box-sizing: border-box;
-        }
-        body{
-            background: #000;
-        }
+        *{box-sizing: border-box;}
+        body{background: #000;}
         .canvas-wrapper{
             width: 100%;
             height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        .btns-wrapper{
-            position: fixed;
-            top: 0;
-            left: 0;
-            display: flex;
-            width: 100%;
-            padding: 10px;
-            align-items: center;
-            justify-content: space-between;
-
-        }
-
-        .btns-wrapper .right{
-            display: flex;
-            align-items: center;
-        }
-        .btns-wrapper .right > *{
-            margin-right: 5px;
-        }
-        .btns-wrapper .right > *:last-child{
-            margin-right: 0;
         }
 
         .radio-form input{
@@ -83,45 +56,130 @@
             height: 30px;
             width: 70px;
         }
-        </style>
+
+        .hamburger{
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 50px;
+            height: 50px;
+            padding: 14px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 1;
+            cursor: pointer;
+        }
+
+        .hamburger span{
+            width: 100%;
+            height: 4px;
+            background: #fff;
+            border-radius: 2px;
+        }
+
+        .hamburger.close{
+            background: #f00;
+            border-radius: 50%;
+            justify-content: center;
+            transform: scale(.5)
+        }
+        .hamburger.close span:nth-child(1),
+        .hamburger.close span:nth-child(3){
+            display: none;
+        }
+
+
+
+        .menu{
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 100vh;
+            background: #fff;
+            transition: right .5s;
+            box-shadow: 0 0 10px rgba(255, 255, 255, .9);
+            padding-top: 50px;
+        }
+        .menu.hidden{
+            right: -250px;
+        }
+        .menu ul{
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow-y: auto;
+            list-style: none;
+            padding: 5px;
+        }
+        .menu ul li{
+            border-bottom: 1px solid rgba(0, 0, 0, .2);
+            padding: 10px 5px;
+        }
+        .menu ul li .title{
+            margin-bottom: 10px;
+        }
+
+            
+    </style>
 </head>
 <body>
     <div class="canvas-wrapper">
         <canvas id="canvas"></canvas>
     </div>
-    <div class="btns-wrapper">
-        <!-- <div class="left">
-            <label class="toggle-form">
-                <input type="checkbox" oninput="changeType();" checked />
-                <span>
-                    <strong>ANALOG</strong>
-                    <strong>DIGITAL</strong>
-                </span>
-            </label>
-        </div> -->
-        <div class="right">
-            <label class="radio-form">
-                <input type="radio" name="effect" value="1" oninput="changeEffect();" checked />
-                <strong>EFECT1</strong>
-            </label>
-            <label class="radio-form">
-                <input type="radio" name="effect" value="2" oninput="changeEffect();">
-                <strong>EFECT2</strong>
-            </label>
-        </div>
-        <!-- <label class="radio-form">
-            <input type="radio" name="effect" value="3" oninput="changeEffect();">
-            <strong>효과3</strong>
-        </label>
-        <label class="radio-form">
-            <input type="radio" name="effect" value="4" oninput="changeEffect();">
-            <strong>효과4</strong>
-        </label> -->
+    <div class="hamburger" id="hamburger" onclick="menuToggle()">
+        <span></span>
+        <span></span>
+        <span></span>
     </div>
+    <aside id="menu" class="menu hidden">
+        <ul>
+            <li>
+                <div class="title">효과</div>
+                <div class="contents">
+                    <label class="radio-form">
+                        <input type="radio" name="effect" value="1" oninput="changeEffect();" checked />
+                        <strong>EFECT1</strong>
+                    </label>
+                    <label class="radio-form">
+                        <input type="radio" name="effect" value="2" oninput="changeEffect();">
+                        <strong>EFECT2</strong>
+                    </label>
+                </div>
+            </li>
+            <!-- <li>
+                <div class="title">모드</div>
+                <div class="contents">
+                    <label class="radio-form">
+                        <input type="checkbox" name="type" oninput="changeType();" checked />
+                        <span></span>
+                        <strong>EFECT1</strong>
+                    </label>
+                </div>
+            </li> -->
+        </ul>
+
+    </aside>
     <script>
+        function menuToggle(bool){
+            const menu = document.querySelector('aside');
+            const btn = document.querySelector('#hamburger');
+
+            if(bool === undefined){
+                menu.classList.toggle('hidden');
+                btn.classList.toggle('close');
+            }else{
+                menu.classList[bool ? 'remove' : 'add']('hidden');
+                btn.classList[bool ? 'remove' : 'add']('close');
+            }
+        }
+
         let raf;
 
         const canvas = document.querySelector('canvas');
+
 
         canvas.width = 240;
         canvas.height = 240;
