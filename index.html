@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>clock</title>
 
-    <link rel="stylesheet" href="./assets/css/normalize.css" />
+    <link rel="stylesheet" href="https://wondaero.github.io/assets/css/normalize.css" />
 
     <style>
         *{box-sizing: border-box;}
@@ -149,16 +149,6 @@
                     </label>
                 </div>
             </li>
-            <!-- <li>
-                <div class="title">모드</div>
-                <div class="contents">
-                    <label class="radio-form">
-                        <input type="checkbox" name="type" oninput="changeType();" checked />
-                        <span></span>
-                        <strong>EFECT1</strong>
-                    </label>
-                </div>
-            </li> -->
         </ul>
 
     </aside>
@@ -180,6 +170,7 @@
 
         const canvas = document.querySelector('canvas');
 
+        const ctx = canvas.getContext('2d');
 
         canvas.width = 240;
         canvas.height = 240;
@@ -261,7 +252,7 @@
             t.width = 0;
             t.height = 0;
 
-            t.gap = 3;
+            t.gap = 1;
 
             t.effectVal = 1;
 
@@ -339,14 +330,14 @@
                 t.ctx.font = `italic ${t.fontSize}px arial`;
 
 
-                // t.ctx.fillText(t.hms, t.width * .5, t.height * .5);
+                t.ctx.fillText(t.hms, t.width * .5, t.height * .5);
 
 
                 const analogRadius = 80;
                 const customR = analogRadius + 40;
                 t.ctx.translate(customR, customR);
 
-                drawClock();
+                // drawClock();
 
                 function drawClock() {
                     drawFace(t.ctx, analogRadius);
